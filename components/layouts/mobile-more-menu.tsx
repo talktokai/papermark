@@ -13,6 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import { useIsAdmin } from "@/lib/hooks/use-is-admin";
 import { useSelfMembership } from "@/lib/hooks/use-self-membership";
 import { usePlan } from "@/lib/swr/use-billing";
@@ -73,7 +74,9 @@ export function MobileMoreMenu({ open, onClose }: MobileMoreMenuProps) {
   const settingsSubItems = [
     { label: "General", href: "/settings/general" },
     { label: "Team", href: "/settings/people" },
-    { label: "Domains", href: "/settings/domains" },
+    ...(isCustomDomainsEnabled()
+      ? [{ label: "Domains", href: "/settings/domains" }]
+      : []),
     { label: "Notifications", href: "/settings/notifications" },
     { label: "Webhooks", href: "/settings/webhooks" },
     { label: "Slack", href: "/settings/slack" },

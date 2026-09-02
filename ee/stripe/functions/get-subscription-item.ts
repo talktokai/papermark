@@ -1,3 +1,5 @@
+import Stripe from "stripe";
+
 import { stripeInstance } from "..";
 
 export interface SubscriptionDiscount {
@@ -15,15 +17,29 @@ export default async function getSubscriptionItem(
   isOldAccount: boolean,
 ) {
   const stripe = stripeInstance(isOldAccount);
+  // Stripe SDK v22 replaced the singular `discount` with a `discounts` array
+  // whose entries are ids unless expanded.
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ["discount.coupon"],
+    expand: ["discounts.source.coupon"],
   });
   const subscriptionItem = subscription.items.data[0];
 
-  // Extract discount information if available
+  // Extract discount information if available. Papermark applies at most one
+  // subscription-level discount, so the first expanded entry is the one.
   let discount: SubscriptionDiscount | null = null;
-  if (subscription.discount && subscription.discount.coupon) {
-    const coupon = subscription.discount.coupon;
+  // v22 also moved the coupon behind `source`, expandable via
+  // `discounts.source.coupon`.
+  const appliedDiscount = subscription.discounts?.find(
+    (entry): entry is Stripe.Discount =>
+      typeof entry !== "string" &&
+      !!entry.source?.coupon &&
+      typeof entry.source.coupon !== "string",
+  );
+  const coupon =
+    appliedDiscount && typeof appliedDiscount.source.coupon !== "string"
+      ? appliedDiscount.source.coupon
+      : null;
+  if (appliedDiscount && coupon) {
     discount = {
       couponId: coupon.id,
       percentOff: coupon.percent_off || undefined,
@@ -31,14 +47,16 @@ export default async function getSubscriptionItem(
       duration: coupon.duration,
       durationInMonths: coupon.duration_in_months || undefined,
       valid: coupon.valid,
-      end: subscription.discount.end || undefined,
+      end: appliedDiscount.end || undefined,
     };
   }
 
   return {
     id: subscriptionItem.id,
-    currentPeriodStart: subscription.current_period_start,
-    currentPeriodEnd: subscription.current_period_end,
+    // Stripe SDK v22 moved the billing period from the subscription onto
+    // each subscription item; Papermark bills a single item per subscription.
+    currentPeriodStart: subscriptionItem.current_period_start,
+    currentPeriodEnd: subscriptionItem.current_period_end,
     discount,
   };
 }

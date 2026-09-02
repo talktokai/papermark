@@ -18,6 +18,7 @@ import { mutate } from "swr";
 import { BLOCKED_PATHNAMES } from "@/lib/constants";
 import { BasePlan, usePlan } from "@/lib/swr/use-billing";
 import useLimits from "@/lib/swr/use-limits";
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import { cn } from "@/lib/utils";
 
 import { UpgradePlanModal } from "@/components/billing/upgrade-plan-modal";
@@ -193,6 +194,21 @@ export default function DomainSection({
     linkType === "DOCUMENT_LINK"
       ? isEditingCustomDomain && !canUseCustomDomainForDocument
       : isEditingCustomDomain && !canUseCustomDomainForDataroom;
+
+  if (!isCustomDomainsEnabled()) {
+    if (editLink && data.domain && data.domain !== "papermark.com") {
+      return (
+        <div className="space-y-1">
+          <Label htmlFor="link-domain">Domain</Label>
+          <div className="font-mono text-sm text-muted-foreground">
+            {data.domain}
+            {data.slug ? `/${data.slug}` : ""}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <>

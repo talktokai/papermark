@@ -13,7 +13,7 @@ import Stripe from "stripe";
 import { sendUpgradePersonalEmail } from "@/lib/emails/send-upgrade-personal-welcome";
 import { sendUpgradePlanEmail } from "@/lib/emails/send-upgrade-plan";
 import prisma from "@/lib/prisma";
-import { sendUpgradeOneMonthCheckinEmailTask } from "@/lib/trigger/send-scheduled-email";
+import { sendUpgradeOneMonthCheckinEmailTask } from "@/lib/trigger/send-upgrade-checkin-email";
 import { log } from "@/lib/utils";
 
 import { getPlanFromPriceId } from "../utils";
@@ -41,8 +41,14 @@ export async function checkoutSessionCompleted(
   );
   const priceId = subscription.items.data[0].price.id;
   const subscriptionId = subscription.id;
-  const subscriptionStart = new Date(subscription.current_period_start * 1000);
-  const subscriptionEnd = new Date(subscription.current_period_end * 1000);
+  // Stripe SDK v22 moved the billing period onto the subscription item.
+  const subscriptionPeriod = subscription.items.data[0];
+  const subscriptionStart = new Date(
+    subscriptionPeriod.current_period_start * 1000,
+  );
+  const subscriptionEnd = new Date(
+    subscriptionPeriod.current_period_end * 1000,
+  );
   const quantity = subscription.items.data[0].quantity;
 
   console.log("subscription", subscription);

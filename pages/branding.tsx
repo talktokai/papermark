@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { mutate } from "swr";
 import { useDebounce } from "use-debounce";
 
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import { useFeatureFlags } from "@/lib/hooks/use-feature-flags";
 import { usePlan } from "@/lib/swr/use-billing";
 import { useBrand, useBrands } from "@/lib/swr/use-brand";
@@ -818,9 +819,11 @@ export default function Branding() {
               </BadgeTooltip>
             </div>
           </div>
-          <Button variant="outline" size="sm" asChild className="shrink-0">
-            <Link href="/settings/domains">Custom domains</Link>
-          </Button>
+          {isCustomDomainsEnabled() && (
+            <Button variant="outline" size="sm" asChild className="shrink-0">
+              <Link href="/settings/domains">Custom domains</Link>
+            </Button>
+          )}
         </div>
 
         <TeamBrandSwitcher
@@ -1689,15 +1692,26 @@ export default function Branding() {
                                     </p>
                                   )}
                                   <p className="text-xs text-muted-foreground">
-                                    Only applies to links shared on a{" "}
-                                    <Link
-                                      href="/settings/domains"
-                                      className="underline underline-offset-4"
-                                    >
-                                      custom domain
-                                    </Link>
-                                    . Links on papermark.com keep the default
-                                    privacy policy.
+                                    {isCustomDomainsEnabled() ? (
+                                      <>
+                                        Only applies to links shared on a{" "}
+                                        <Link
+                                          href="/settings/domains"
+                                          className="underline underline-offset-4"
+                                        >
+                                          custom domain
+                                        </Link>
+                                        . Links on{" "}
+                                        {process.env.NEXT_PUBLIC_APP_BASE_HOST ||
+                                          "papermark.com"}{" "}
+                                        keep the default privacy policy.
+                                      </>
+                                    ) : (
+                                      `Links on ${
+                                        process.env.NEXT_PUBLIC_APP_BASE_HOST ||
+                                        "papermark.com"
+                                      } use the default privacy policy.`
+                                    )}
                                   </p>
                                 </div>
                               )}

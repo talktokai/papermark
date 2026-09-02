@@ -20,16 +20,35 @@ function isAnalyticsPath(path: string) {
 }
 
 function isCustomDomain(host: string) {
+  if (process.env.NEXT_PUBLIC_ENABLE_CUSTOM_DOMAINS !== "true") {
+    return false;
+  }
+
+  const appHost = process.env.NEXT_PUBLIC_APP_BASE_HOST?.toLowerCase().trim();
+  const apiHost = process.env.NEXT_PUBLIC_API_BASE_HOST?.toLowerCase().trim();
+  const mcpHost = process.env.NEXT_PUBLIC_MCP_BASE_HOST?.toLowerCase().trim();
+  const webhookHost =
+    process.env.NEXT_PUBLIC_WEBHOOK_BASE_HOST?.toLowerCase().trim();
+  const cleanHost = host?.split(":")[0]?.toLowerCase().trim();
+
+  if (
+    !cleanHost ||
+    cleanHost === "localhost" ||
+    cleanHost === appHost ||
+    cleanHost === apiHost ||
+    cleanHost === mcpHost ||
+    cleanHost === webhookHost ||
+    cleanHost.includes("papermark.io") ||
+    cleanHost.includes("papermark.com") ||
+    cleanHost.endsWith(".vercel.app")
+  ) {
+    return false;
+  }
+
   return (
     (process.env.NODE_ENV === "development" &&
-      (host?.includes(".local") || host?.includes("papermark.dev"))) ||
-    (process.env.NODE_ENV !== "development" &&
-      !(
-        host?.includes("localhost") ||
-        host?.includes("papermark.io") ||
-        host?.includes("papermark.com") ||
-        host?.endsWith(".vercel.app")
-      ))
+      (cleanHost.includes(".local") || cleanHost.includes("papermark.dev"))) ||
+    process.env.NODE_ENV !== "development"
   );
 }
 

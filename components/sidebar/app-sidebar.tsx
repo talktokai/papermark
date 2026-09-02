@@ -20,6 +20,7 @@ import {
   WorkflowIcon,
 } from "lucide-react";
 
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import { useFeatureFlags } from "@/lib/hooks/use-feature-flags";
 import { useIsAdmin } from "@/lib/hooks/use-is-admin";
 import { useSelfMembership } from "@/lib/hooks/use-self-membership";
@@ -181,11 +182,15 @@ export function AppSidebarContent() {
             url: "/settings/people",
             current: router.pathname.includes("settings/people"),
           },
-          {
-            title: "Domains",
-            url: "/settings/domains",
-            current: router.pathname.includes("settings/domains"),
-          },
+          ...(isCustomDomainsEnabled()
+            ? [
+                {
+                  title: "Domains",
+                  url: "/settings/domains",
+                  current: router.pathname.includes("settings/domains"),
+                },
+              ]
+            : []),
           {
             title: "Notifications",
             url: "/settings/notifications",

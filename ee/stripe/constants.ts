@@ -1,3 +1,5 @@
+import type { Currency } from "./currency";
+
 export enum PlanEnum {
   Pro = "Pro",
   Business = "Business",
@@ -22,6 +24,13 @@ export type PeriodType = "monthly" | "yearly";
 
 export interface Feature {
   id: string;
+  /**
+   * Alternate ids this feature also answers to, so an upsell triggered by a
+   * legacy or related item id still matches it (see the `highlightItem` and
+   * `hideItems` checks in components/billing/upgrade-plan-modal.tsx). No
+   * feature below sets it today; declared so those reads type-check.
+   */
+  aliasIds?: string[];
   text: string;
   highlight?: boolean;
   tooltip?: string;
@@ -239,6 +248,13 @@ export const BASE_FEATURES: Record<PlanEnum, PlanFeatures> = {
 
 interface FeatureOptions {
   period?: PeriodType;
+  /**
+   * Accepted for call-site symmetry with the pricing components, which pass
+   * the viewer's currency alongside the period. Feature copy carries no
+   * prices, so nothing here varies by currency; declared so callers that pass
+   * it type-check.
+   */
+  currency?: Currency;
   showHighlighted?: boolean;
   maxFeatures?: number;
   excludeFeatures?: string[];

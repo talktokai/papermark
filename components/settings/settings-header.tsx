@@ -1,3 +1,4 @@
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import { useFeatureFlags } from "@/lib/hooks/use-feature-flags";
 import { useIsAdmin } from "@/lib/hooks/use-is-admin";
 
@@ -32,11 +33,15 @@ export function SettingsHeader() {
             href: `/settings/people`,
             segment: "people",
           },
-          {
-            label: "Domains",
-            href: `/settings/domains`,
-            segment: "domains",
-          },
+          ...(isCustomDomainsEnabled()
+            ? [
+                {
+                  label: "Domains",
+                  href: `/settings/domains`,
+                  segment: "domains",
+                },
+              ]
+            : []),
           {
             label: "Presets",
             href: `/settings/presets`,

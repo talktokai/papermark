@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/rbac/entitlements";
 import { isDataroomScopedRole } from "@/lib/api/rbac/permissions";
 import { errorhandler } from "@/lib/errorHandler";
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import prisma from "@/lib/prisma";
 import { CustomUser, WatermarkConfigSchema } from "@/lib/types";
 import {
@@ -185,8 +186,14 @@ export default async function handler(
 
       let { domain, slug, ...linkData } = linkDomainData;
 
-      // set domain and slug to null if the domain is papermark.com
-      if (domain && domain === "papermark.com") {
+      // set domain and slug to null if the domain is papermark.com or app base host or custom domains disabled
+      const appHost = process.env.NEXT_PUBLIC_APP_BASE_HOST?.toLowerCase().trim();
+      if (
+        domain &&
+        (domain === "papermark.com" ||
+          (appHost && domain.toLowerCase().trim() === appHost) ||
+          !isCustomDomainsEnabled())
+      ) {
         domain = null;
         slug = null;
       }

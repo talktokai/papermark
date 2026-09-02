@@ -2,6 +2,18 @@ import { DataroomFolder, Document, DocumentVersion } from "@prisma/client";
 import ExcelJS from "exceljs";
 
 import { LinkWithDataroom } from "../types";
+
+/**
+ * The subset of {@link LinkWithDataroom} that {@link generateDataroomIndex}
+ * actually reads. Callers assemble this shape directly from their own query
+ * rather than passing a whole link row.
+ */
+export type DataroomIndexSource = Pick<LinkWithDataroom, "id"> & {
+  dataroom: Pick<
+    LinkWithDataroom["dataroom"],
+    "id" | "name" | "teamId" | "createdAt" | "lastUpdatedAt" | "folders" | "documents"
+  >;
+};
 import {
   DataroomIndex,
   DataroomIndexEntry,
@@ -47,7 +59,7 @@ const formatBytes = (bytes: number): number => {
 };
 
 export async function generateDataroomIndex(
-  link: LinkWithDataroom,
+  link: DataroomIndexSource,
   options: GenerateIndexOptions = {},
 ): Promise<{ data: Buffer; filename: string; mimeType: string }> {
   const { format = "excel", baseUrl, showHierarchicalIndex = false } = options;

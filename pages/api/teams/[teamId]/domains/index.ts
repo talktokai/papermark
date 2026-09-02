@@ -4,7 +4,11 @@ import { getServerSession } from "next-auth/next";
 
 import { setDomainRedirectUrl } from "@/lib/api/domains/redis";
 import { validateRedirectUrl } from "@/lib/api/domains/validate-redirect-url";
-import { addDomainToVercel, validDomainRegex } from "@/lib/domains";
+import {
+  addDomainToVercel,
+  isCustomDomainsEnabled,
+  validDomainRegex,
+} from "@/lib/domains";
 import { errorhandler } from "@/lib/errorHandler";
 import prisma from "@/lib/prisma";
 import { CustomUser } from "@/lib/types";
@@ -16,6 +20,15 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (!isCustomDomainsEnabled()) {
+    if (req.method === "GET") {
+      return res.status(200).json([]);
+    }
+    return res.status(400).json({
+      message: "Custom domains are disabled on this instance.",
+    });
+  }
+
   if (req.method === "GET") {
     // GET /api/teams/:teamId/domains
     const session = await getServerSession(req, res, authOptions);

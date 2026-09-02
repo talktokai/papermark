@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 
+import type { PeriodType } from "./constants";
+
 // Historical price IDs that are no longer in the main PLANS configuration
 // but still need to be supported for existing subscriptions
 const HISTORICAL_PRICE_IDS: Record<string, Record<string, string>> = {
@@ -102,7 +104,34 @@ export function isUpgradedCustomer(
   return isUpgradedUser;
 }
 
-export const PLANS = [
+/**
+ * Shape of an entry in {@link PLANS}.
+ *
+ * Declared explicitly because consumers read an optional `amountUsd` (a USD
+ * price shown when the viewer's currency is USD — see
+ * components/billing/plan-price.tsx) that no plan below currently sets. Left
+ * to inference, TypeScript narrows the price object to the keys present in
+ * the data and those reads fail to compile.
+ */
+export type PlanPricePeriod = {
+  amount: number;
+  /** USD price; falls back to `amount` (EUR) when unset. */
+  amountUsd?: number;
+  unitPrice: number;
+  priceIds: {
+    test: { old: string; new: string };
+    production: { old: string; new: string };
+  };
+};
+
+export type PlanDefinition = {
+  name: string;
+  slug: string;
+  minQuantity: number;
+  price: Record<PeriodType, PlanPricePeriod>;
+};
+
+export const PLANS: PlanDefinition[] = [
   {
     name: "Pro",
     slug: "pro",

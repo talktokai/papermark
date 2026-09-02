@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Self-hosted (Docker/Coolify) builds ship a standalone server bundle so the
+  // runtime image doesn't need the full node_modules tree. Left off on Vercel,
+  // which handles output tracing itself.
+  output: process.env.BUILD_STANDALONE === "true" ? "standalone" : undefined,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   transpilePackages: ["@boxyhq/saml-jackson", "@libpdf/core"],

@@ -56,6 +56,13 @@ export type ConversationSidebarProps = {
   linkId: string;
   viewId: string;
   dataroomId?: string;
+  /**
+   * Display names passed by the nav components
+   * (components/view/dataroom/nav-dataroom.tsx and components/view/nav.tsx).
+   * Unused by this component, but declared so those call sites type-check.
+   */
+  dataroomName?: string;
+  documentName?: string;
   documentId?: string;
   pageNumber?: number;
   viewerId?: string;
