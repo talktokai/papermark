@@ -8,6 +8,7 @@ import { trackAnalytics } from "@/lib/analytics";
 import {
   getConfigResponse,
   getDomainResponse,
+  isCustomDomainsEnabled,
   verifyDomain,
 } from "@/lib/domains";
 import prisma from "@/lib/prisma";
@@ -19,6 +20,12 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (!isCustomDomainsEnabled()) {
+    return res
+      .status(400)
+      .json({ error: "Custom domains are disabled on this instance." });
+  }
+
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);

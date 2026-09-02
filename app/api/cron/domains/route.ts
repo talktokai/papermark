@@ -4,6 +4,7 @@ import { receiver } from "@/lib/cron";
 import {
   getConfigResponse,
   getDomainResponse,
+  isCustomDomainsEnabled,
   verifyDomain,
 } from "@/lib/domains";
 import prisma from "@/lib/prisma";
@@ -22,6 +23,12 @@ import { handleDomainUpdates } from "./utils";
 export const maxDuration = 300; // 5 minutes in seconds
 
 export async function POST(req: Request) {
+  if (!isCustomDomainsEnabled()) {
+    return NextResponse.json({
+      message: "Custom domains cron skipped: feature disabled",
+    });
+  }
+
   const body = await req.json();
   if (process.env.VERCEL === "1") {
     const isValid = await receiver.verify({

@@ -22,15 +22,29 @@ export async function invoiceUpcoming(
     return res.status(200).json({ received: true });
   }
 
-  // Check if this is a yearly subscription
+  // Check if this is a yearly subscription.
+  //
+  // Stripe SDK v22 replaced the line item's `price` with
+  // `pricing.price_details.price`, which is a price id unless expanded. Fall
+  // back to the line's own `period` when the price object isn't available, so
+  // a 12-month span still reads as a yearly renewal.
   const hasYearlyPlan = lineItems.some((item) => {
-    if (item.price && item.price.recurring) {
+    const price = item.pricing?.price_details?.price;
+    const recurring =
+      price && typeof price !== "string" ? price.recurring : null;
+
+    if (recurring) {
       return (
-        item.price.recurring.interval === "year" ||
-        (item.price.recurring.interval === "month" &&
-          item.price.recurring.interval_count === 12)
+        recurring.interval === "year" ||
+        (recurring.interval === "month" && recurring.interval_count === 12)
       );
     }
+
+    if (item.period?.start && item.period?.end) {
+      const spanDays = (item.period.end - item.period.start) / 86400;
+      return spanDays >= 365;
+    }
+
     return false;
   });
 

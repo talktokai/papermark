@@ -3,6 +3,10 @@ import { decodeHTML } from "entities";
 
 import { MAX_MESSAGE_LENGTH } from "@/lib/constants";
 
+// Re-exported so the conversation UI can read the limit from the same module
+// it imports the validator from.
+export { MAX_MESSAGE_LENGTH };
+
 const plainTextSanitizeConfig = {
   allowedTags: [],
   allowedAttributes: {},

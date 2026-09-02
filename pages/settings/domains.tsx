@@ -5,6 +5,7 @@ import { Domain } from "@prisma/client";
 import { CircleHelpIcon, GlobeIcon } from "lucide-react";
 import { mutate } from "swr";
 
+import { isCustomDomainsEnabled } from "@/lib/domains";
 import { usePlan } from "@/lib/swr/use-billing";
 import { useDomains } from "@/lib/swr/use-domains";
 
@@ -23,12 +24,34 @@ import {
 import { BadgeTooltip } from "@/components/ui/tooltip";
 
 export default function Domains() {
-  const { domains } = useDomains({ enabled: true });
+  const customDomainsEnabled = isCustomDomainsEnabled();
+  const { domains } = useDomains({ enabled: customDomainsEnabled });
   const teamInfo = useTeam();
   const { isBusiness, isDatarooms } = usePlan();
 
   const [open, setOpen] = useState<boolean>(false);
   const [newlyAddedDomain, setNewlyAddedDomain] = useState<string | null>(null);
+
+  if (!customDomainsEnabled) {
+    return (
+      <AppLayout>
+        <main className="relative mx-2 mb-10 mt-4 space-y-8 overflow-hidden px-1 sm:mx-3 md:mx-5 md:mt-5 lg:mx-7 lg:mt-8 xl:mx-10">
+          <SettingsHeader />
+          <div className="rounded-lg border border-gray-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800">
+              <GlobeIcon className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 text-base font-semibold text-gray-900 dark:text-gray-100">
+              Custom Domains Disabled
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
+              Custom domain management is disabled on this instance. All links are served from your configured host.
+            </p>
+          </div>
+        </main>
+      </AppLayout>
+    );
+  }
 
   const handleDomainDeletion = (deletedDomain: string) => {
     mutate(

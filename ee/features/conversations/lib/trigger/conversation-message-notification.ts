@@ -11,6 +11,22 @@ type NotificationPayload = {
   senderUserId: string;
 };
 
+/**
+ * Notifies viewers who were @-mentioned in a conversation message.
+ *
+ * The mention-specific delivery is not part of the public source; this
+ * forwards to the same recipients as a regular message notification so the
+ * task id stays registered and lib/trigger/conversation-message-notification
+ * keeps re-exporting it.
+ */
+export const sendConversationMentionNotificationTask = task({
+  id: "send-conversation-mention-notification",
+  retry: { maxAttempts: 3 },
+  run: async (payload: NotificationPayload) => {
+    return sendConversationMessageNotificationTask.triggerAndWait(payload);
+  },
+});
+
 export const sendConversationMessageNotificationTask = task({
   id: "send-conversation-message-notification",
   retry: { maxAttempts: 3 },

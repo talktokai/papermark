@@ -1,15 +1,20 @@
 import prisma from "@/lib/prisma";
 
-import { SlackClient } from "./client";
+import { getSlackClient } from "./client";
 import { getSlackEnv } from "./env";
 import { createSlackMessage } from "./templates";
 import { SlackEventData, SlackIntegrationServer } from "./types";
 
 export class SlackEventManager {
-  private client: SlackClient;
-
-  constructor() {
-    this.client = new SlackClient();
+  /**
+   * Resolved on demand rather than in the constructor: SlackClient throws when
+   * the Slack credentials are unset, and `slackEventManager` below is created
+   * at module scope. Building that eagerly broke `next build` (Next evaluates
+   * route modules while collecting page data) for deployments with no Slack
+   * integration configured.
+   */
+  private get client() {
+    return getSlackClient();
   }
 
   /**

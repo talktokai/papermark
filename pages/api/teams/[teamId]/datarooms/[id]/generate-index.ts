@@ -184,6 +184,7 @@ export default async function handle(
       dataroom: {
         id: link.dataroom.id,
         name: link.dataroom.name,
+        teamId: link.dataroom.teamId,
         createdAt: link.dataroom.createdAt,
         lastUpdatedAt: link.dataroom.updatedAt,
         folders: link.dataroom.folders,

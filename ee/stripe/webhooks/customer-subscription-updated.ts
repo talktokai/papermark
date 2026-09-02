@@ -54,8 +54,10 @@ export async function customerSubsciptionUpdated(
 
   const newPlan = plan.slug;
   const subscriptionId = subscriptionUpdated.id;
-  const startsAt = new Date(subscriptionUpdated.current_period_start * 1000);
-  const endsAt = new Date(subscriptionUpdated.current_period_end * 1000);
+  // Stripe SDK v22 moved the billing period onto the subscription item.
+  const updatedPeriod = subscriptionUpdated.items.data[0];
+  const startsAt = new Date(updatedPeriod.current_period_start * 1000);
+  const endsAt = new Date(updatedPeriod.current_period_end * 1000);
   const quantity = subscriptionUpdated.items.data[0].quantity;
 
   let teamPlan = team.plan;

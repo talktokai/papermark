@@ -62,7 +62,14 @@ export interface ConversationSummary {
   };
 }
 
-export default function DataroomConversationsPage() {
+export default function DataroomConversationsPage(_props: {
+  /**
+   * Passed by pages/datarooms/[id]/conversations/[conversationId]/index.tsx to
+   * deep-link a single thread. Unused by this page today; declared so that
+   * call site type-checks.
+   */
+  initialConversationId?: string;
+}) {
   const router = useRouter();
   const { limits, error: limitsError, loading: limitsLoading } = useLimits();
   const { dataroom } = useDataroom();

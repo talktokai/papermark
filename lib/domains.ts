@@ -4,7 +4,19 @@ import {
   DomainVerificationResponse,
 } from "@/lib/types";
 
+export const isCustomDomainsEnabled = (): boolean => {
+  return process.env.NEXT_PUBLIC_ENABLE_CUSTOM_DOMAINS === "true";
+};
+
 export const addDomainToVercel = async (domain: string) => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return {
+      error: {
+        code: "custom_domains_disabled",
+        message: "Custom domains are disabled on this instance.",
+      },
+    };
+  }
   return await fetch(
     `https://api.vercel.com/v10/projects/${process.env.PROJECT_ID_VERCEL}/domains?teamId=${process.env.TEAM_ID_VERCEL}`,
     {
@@ -21,6 +33,9 @@ export const addDomainToVercel = async (domain: string) => {
 };
 
 export const removeDomainFromVercelProject = async (domain: string) => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return { success: true };
+  }
   return await fetch(
     `https://api.vercel.com/v9/projects/${process.env.PROJECT_ID_VERCEL}/domains/${domain}?teamId=${process.env.TEAM_ID_VERCEL}`,
     {
@@ -33,6 +48,9 @@ export const removeDomainFromVercelProject = async (domain: string) => {
 };
 
 export const removeDomainFromVercelTeam = async (domain: string) => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return { success: true };
+  }
   return await fetch(
     `https://api.vercel.com/v6/domains/${domain}?teamId=${process.env.TEAM_ID_VERCEL}`,
     {
@@ -48,6 +66,9 @@ export const removeDomainFromVercel = async (
   domain: string,
   domainCount: number,
 ) => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return;
+  }
   if (domainCount > 1) {
     // the apex domain is being used by other domains
     // so we should only remove it from our Vercel project
@@ -62,7 +83,24 @@ export const removeDomainFromVercel = async (
 
 export const getDomainResponse = async (
   domain: string,
-): Promise<DomainResponse & { error: { code: string; message: string } }> => {
+): Promise<DomainResponse & { error?: { code: string; message: string } }> => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return {
+      name: domain,
+      apexName: domain,
+      projectId: "",
+      redirect: null,
+      redirectStatusCode: null,
+      gitBranch: null,
+      updatedAt: 0,
+      createdAt: 0,
+      verified: false,
+      error: {
+        code: "custom_domains_disabled",
+        message: "Custom domains are disabled on this instance.",
+      },
+    } as any;
+  }
   return await fetch(
     `https://api.vercel.com/v9/projects/${process.env.PROJECT_ID_VERCEL}/domains/${domain.toLowerCase()}?teamId=${process.env.TEAM_ID_VERCEL}`,
     {
@@ -80,6 +118,14 @@ export const getDomainResponse = async (
 export const getConfigResponse = async (
   domain: string,
 ): Promise<DomainConfigResponse> => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return {
+      configuredBy: null,
+      acceptedChallenges: [],
+      misconfigured: false,
+      conflicts: [],
+    } as any;
+  }
   return await fetch(
     `https://api.vercel.com/v6/domains/${domain.toLowerCase()}/config?teamId=${process.env.TEAM_ID_VERCEL}`,
     {
@@ -95,6 +141,19 @@ export const getConfigResponse = async (
 export const verifyDomain = async (
   domain: string,
 ): Promise<DomainVerificationResponse> => {
+  if (!process.env.AUTH_BEARER_TOKEN || !process.env.PROJECT_ID_VERCEL) {
+    return {
+      name: domain,
+      apexName: domain,
+      projectId: "",
+      redirect: null,
+      redirectStatusCode: null,
+      gitBranch: null,
+      updatedAt: 0,
+      createdAt: 0,
+      verified: false,
+    } as any;
+  }
   return await fetch(
     `https://api.vercel.com/v9/projects/${process.env.PROJECT_ID_VERCEL}/domains/${domain.toLowerCase()}/verify?teamId=${process.env.TEAM_ID_VERCEL}`,
     {

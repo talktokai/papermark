@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import dns from "dns/promises";
 import { getServerSession } from "next-auth/next";
 
-import { validDomainRegex } from "@/lib/domains";
+import { isCustomDomainsEnabled, validDomainRegex } from "@/lib/domains";
 import { errorhandler } from "@/lib/errorHandler";
 import prisma from "@/lib/prisma";
 import { CustomUser } from "@/lib/types";
@@ -23,6 +23,13 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (!isCustomDomainsEnabled()) {
+    return res.status(400).json({
+      status: "invalid" as DomainValidationStatus,
+      message: "Custom domains are disabled on this instance.",
+    });
+  }
+
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);

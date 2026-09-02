@@ -23,6 +23,25 @@ export const rateLimiters = {
     enableProtection: true,
     analytics: true,
   }),
+
+  // Bulk link import is a heavy, fan-out write; keep it well below the
+  // interactive limits above.
+  bulkLinkImport: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(5, "20 m"),
+    prefix: "rl:bulk-link-import",
+    enableProtection: true,
+    analytics: true,
+  }),
+
+  // Domain verification polls an external DNS/provider API.
+  domainVerification: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, "20 m"),
+    prefix: "rl:domain-verification",
+    enableProtection: true,
+    analytics: true,
+  }),
 };
 
 /**
