@@ -59,6 +59,7 @@ scripts/*
 !scripts/check-brand-logo.ts
 !scripts/check-mcp-schema-dialect.ts
 !scripts/extend-trial.ts
+!scripts/setup-hetzner-swap.sh
 !scripts/local/
 scripts/local/.tinybird-page-views.json
 !.github/scripts/

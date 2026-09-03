@@ -32,6 +32,9 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV BUILD_STANDALONE=true
+# Cap Node memory allocation and worker concurrency to prevent OOM server lockup on VPS
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NEXT_CPU_COUNT=1
 
 # NEXT_PUBLIC_* values are inlined into the client bundle at build time, so they
 # must be present here and not only at runtime. Coolify passes them through as

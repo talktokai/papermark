@@ -126,11 +126,25 @@ dependencies of its own, so copying just the `prisma` packages out of the
 build stage is not enough) and is kept out of the app's own `node_modules` so
 it cannot shadow the standalone server's bundled copies.
 
-### Memory
+### Memory and Hetzner VPS sizing
 
 `/api/mupdf/convert-page` renders PDF pages in-process. Vercel allocates 2 GB
 for that route, and the Dockerfile sets `NODE_OPTIONS=--max-old-space-size=2048`
 to match. Give the container at least 3 GB, or large PDFs will OOM.
+
+#### Preventing VPS lockups on Hetzner / Coolify builds
+Hetzner Cloud VPS instances ship with **0 MB SWAP** by default. Compiling
+Next.js inside Docker spikes RAM and CPU, which without swap causes Linux kernel
+deadlocks (the server completely freezes and drops SSH).
+
+To prevent this:
+1. **Configure SWAP on the server**: Run `sudo bash scripts/setup-hetzner-swap.sh 4`
+   (or create a 4-8 GB swapfile).
+2. **Built-in Docker optimizations**: The `Dockerfile` caps Node heap (`NODE_OPTIONS=--max-old-space-size=2048`),
+   restricts workers (`NEXT_CPU_COUNT=1`), and `next.config.mjs` ignores ESLint during build.
+3. **Alternative - Pre-built image**: Use the GitHub Actions workflow (`.github/workflows/docker-publish.yml`)
+   to build on GitHub runners and deploy via Docker Image (`ghcr.io/...`) in Coolify, bypassing server-side compilation entirely.
+
 
 ## What breaks off Vercel
 

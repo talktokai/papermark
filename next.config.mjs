@@ -4,6 +4,10 @@ const nextConfig = {
   // runtime image doesn't need the full node_modules tree. Left off on Vercel,
   // which handles output tracing itself.
   output: process.env.BUILD_STANDALONE === "true" ? "standalone" : undefined,
+  eslint: {
+    // Avoid running ESLint during next build to prevent memory spikes (OOM) on servers
+    ignoreDuringBuilds: true,
+  },
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   transpilePackages: ["@boxyhq/saml-jackson", "@libpdf/core"],
@@ -151,17 +155,6 @@ const nextConfig = {
   async redirects() {
     const redirects = [
       {
-        source: "/",
-        destination: "/dashboard",
-        permanent: false,
-        has: [
-          {
-            type: "host",
-            value: process.env.NEXT_PUBLIC_APP_BASE_HOST,
-          },
-        ],
-      },
-      {
         source: "/settings",
         destination: "/settings/general",
         permanent: false,
@@ -180,6 +173,20 @@ const nextConfig = {
         has: [{ type: "host", value: "pitchdeck.jonpagels.com" }],
       },
     ];
+
+    if (process.env.NEXT_PUBLIC_APP_BASE_HOST) {
+      redirects.unshift({
+        source: "/",
+        destination: "/dashboard",
+        permanent: false,
+        has: [
+          {
+            type: "host",
+            value: process.env.NEXT_PUBLIC_APP_BASE_HOST,
+          },
+        ],
+      });
+    }
     // mcp.papermark.com/ → docs. 302 (not 301) so we can repoint later
     // when docs move. The /mcp endpoint and /.well-known/* + /oauth/*
     // paths are rewritten above and take precedence, so this only
@@ -201,7 +208,7 @@ const nextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === "development";
 
-    return [
+    const headers = [
       {
         // Default headers for all routes
         source: "/:path*",
@@ -288,21 +295,6 @@ const nextConfig = {
         ],
       },
       {
-        source: "/services/:path*",
-        has: [
-          {
-            type: "host",
-            value: process.env.NEXT_PUBLIC_WEBHOOK_BASE_HOST,
-          },
-        ],
-        headers: [
-          {
-            key: "X-Robots-Tag",
-            value: "noindex",
-          },
-        ],
-      },
-      {
         source: "/api/webhooks/services/:path*",
         headers: [
           {
@@ -321,6 +313,26 @@ const nextConfig = {
         ],
       },
     ];
+
+    if (process.env.NEXT_PUBLIC_WEBHOOK_BASE_HOST) {
+      headers.push({
+        source: "/services/:path*",
+        has: [
+          {
+            type: "host",
+            value: process.env.NEXT_PUBLIC_WEBHOOK_BASE_HOST,
+          },
+        ],
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex",
+          },
+        ],
+      });
+    }
+
+    return headers;
   },
   experimental: {
     // Rewrite barrel imports (e.g. `import { Icon } from "lucide-react"`) to
