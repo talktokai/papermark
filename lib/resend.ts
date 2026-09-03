@@ -49,6 +49,7 @@ export const sendEmail = async ({
 
   const fromAddress =
     from ??
+    process.env.RESEND_FROM_EMAIL ??
     (marketing
       ? "Marc from Papermark <marc@updates.papermark.com>"
       : system
