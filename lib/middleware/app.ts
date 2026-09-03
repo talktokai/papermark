@@ -51,7 +51,7 @@ export default async function AppMiddleware(req: NextRequest) {
   const url = req.nextUrl;
   const path = url.pathname;
   const isInvited = url.searchParams.has("invitation");
-  const token = (await getToken({
+  let token = (await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
   })) as {
@@ -59,7 +59,20 @@ export default async function AppMiddleware(req: NextRequest) {
     user?: {
       createdAt?: string;
     };
-  };
+  } | null;
+
+  if (!token?.email) {
+    token = (await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: "next-auth.session-token",
+    })) as {
+      email?: string;
+      user?: {
+        createdAt?: string;
+      };
+    } | null;
+  }
 
   // UNAUTHENTICATED if there's no token and the path isn't /login, redirect to /login
   if (!token?.email && path !== LOGIN_PATH) {

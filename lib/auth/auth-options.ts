@@ -16,6 +16,10 @@ import prisma from "@/lib/prisma";
 import { CustomUser } from "@/lib/types";
 
 const VERCEL_DEPLOYMENT = !!process.env.VERCEL_URL;
+const useSecureCookies =
+  process.env.NEXTAUTH_URL?.startsWith("https://") ??
+  process.env.NODE_ENV === "production";
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
 function getMainDomainUrl(): string {
   if (process.env.NODE_ENV === "development") {
@@ -181,15 +185,16 @@ export const authOptions: NextAuthOptions = {
   ],
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  useSecureCookies,
   cookies: {
     sessionToken: {
-      name: `${VERCEL_DEPLOYMENT ? "__Secure-" : ""}next-auth.session-token`,
+      name: `${cookiePrefix}next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
         domain: VERCEL_DEPLOYMENT ? ".papermark.com" : undefined,
-        secure: VERCEL_DEPLOYMENT,
+        secure: useSecureCookies,
       },
     },
   },
