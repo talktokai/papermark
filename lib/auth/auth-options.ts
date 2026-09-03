@@ -246,13 +246,19 @@ export const authOptions: NextAuthOptions = {
         userId: message.user.id,
       });
 
-      await qstash.publishJSON({
-        url: `${process.env.NEXT_PUBLIC_BASE_URL ?? getMainDomainUrl()}/api/cron/welcome-user`,
-        body: {
-          userId: message.user.id,
-        },
-        delay: 15 * 60,
-      });
+      if (process.env.QSTASH_TOKEN) {
+        try {
+          await qstash.publishJSON({
+            url: `${process.env.NEXT_PUBLIC_BASE_URL ?? getMainDomainUrl()}/api/cron/welcome-user`,
+            body: {
+              userId: message.user.id,
+            },
+            delay: 15 * 60,
+          });
+        } catch (error) {
+          console.warn("[Auth] Failed to schedule welcome email via QStash:", error);
+        }
+      }
     },
   },
 };
