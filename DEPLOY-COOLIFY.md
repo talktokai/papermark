@@ -32,6 +32,17 @@ because Coolify then manages their backups.
 **Build pack:** Dockerfile
 **Port:** 3000
 
+### Health check
+
+In Coolify's **Health check** configuration:
+- **Healthcheck Path:** `/api/health`
+- **Healthcheck Port:** `3000`
+- **Healthcheck Method:** `GET`
+- **Start period:** `20` (seconds, allows Next.js to start up and connect to Postgres)
+- **Interval:** `10`
+- **Timeout:** `5`
+- **Retries:** `3`
+
 ### Build-time variables
 
 `NEXT_PUBLIC_*` values are inlined into the client bundle during `next build`,
