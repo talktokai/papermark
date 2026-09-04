@@ -363,6 +363,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       type: "error",
       mention: true,
     });
-    throw error;
+    return res.status(500).json({
+      error: "Failed to convert page",
+      details: (error as Error)?.message || "Unknown error",
+    });
   }
 };

@@ -74,7 +74,8 @@ const putHandler = withTeamApi(
           .status(409)
           .json({ message: "A brand with this name already exists" });
       }
-      throw error;
+      console.error("Error updating brand:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
   { requiredPermissions: ["branding.write"] },

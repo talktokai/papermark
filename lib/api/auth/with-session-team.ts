@@ -5,6 +5,7 @@ import { Role } from "@prisma/client";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/auth-options";
+import { errorhandler, errorResponse } from "@/lib/errorHandler";
 import prisma from "@/lib/prisma";
 import { CustomUser } from "@/lib/types";
 
@@ -287,7 +288,11 @@ export function withTeam(
       );
     }
 
-    return handler({ ...result, req, params });
+    try {
+      return await handler({ ...result, req, params });
+    } catch (err) {
+      return errorResponse(err);
+    }
   };
 }
 
@@ -325,6 +330,10 @@ export function withTeamApi(
       return;
     }
 
-    await handler({ ...result, req, res });
+    try {
+      await handler({ ...result, req, res });
+    } catch (err) {
+      errorhandler(err, res);
+    }
   };
 }
