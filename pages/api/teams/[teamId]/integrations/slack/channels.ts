@@ -8,7 +8,7 @@ import {
   SlackRateLimitError,
   getSlackClient,
 } from "@/lib/integrations/slack/client";
-import { getSlackEnv } from "@/lib/integrations/slack/env";
+import { getSlackEnv, isSlackConfigured } from "@/lib/integrations/slack/env";
 import { SlackCredential } from "@/lib/integrations/slack/types";
 import { slackChannelsCacheKey } from "@/lib/integrations/slack/utils";
 import prisma from "@/lib/prisma";
@@ -53,6 +53,10 @@ export default async function handler(
 
   if (!userTeam) {
     return res.status(403).json({ error: "Access denied" });
+  }
+
+  if (!isSlackConfigured()) {
+    return res.status(404).json({ error: "Slack integration not configured" });
   }
 
   const env = getSlackEnv();

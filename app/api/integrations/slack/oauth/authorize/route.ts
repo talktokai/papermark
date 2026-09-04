@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { getServerSession } from "next-auth/next";
 import { z } from "zod";
 
+import { isSlackConfigured } from "@/lib/integrations/slack/env";
 import { getSlackInstallationUrl } from "@/lib/integrations/slack/install";
 import prisma from "@/lib/prisma";
 import { CustomUser } from "@/lib/types";
@@ -34,6 +35,16 @@ export async function GET(req: Request) {
 
     if (!userTeam) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    if (!isSlackConfigured()) {
+      return NextResponse.json(
+        {
+          error:
+            "Slack app environment variables are not configured on this server.",
+        },
+        { status: 400 },
+      );
     }
 
     const oauthUrl = await getSlackInstallationUrl(teamId);

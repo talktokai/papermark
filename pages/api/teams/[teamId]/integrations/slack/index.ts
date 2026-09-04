@@ -4,7 +4,7 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { z } from "zod";
 
-import { getSlackEnv } from "@/lib/integrations/slack/env";
+import { getSlackEnv, isSlackConfigured } from "@/lib/integrations/slack/env";
 import {
   SlackCredential,
   SlackCredentialPublic,
@@ -70,6 +70,10 @@ async function handleGet(
   res: NextApiResponse,
   teamId: string,
 ) {
+  if (!isSlackConfigured()) {
+    return res.status(404).json({ error: "Slack integration not configured" });
+  }
+
   const env = getSlackEnv();
 
   try {
@@ -113,6 +117,10 @@ async function handleUpdate(
   res: NextApiResponse,
   teamId: string,
 ) {
+  if (!isSlackConfigured()) {
+    return res.status(400).json({ error: "Slack integration not configured" });
+  }
+
   const env = getSlackEnv();
   try {
     const validationResult = slackIntegrationUpdateSchema.safeParse(req.body);
@@ -189,6 +197,10 @@ async function handleDelete(
   res: NextApiResponse,
   teamId: string,
 ) {
+  if (!isSlackConfigured()) {
+    return res.status(400).json({ error: "Slack integration not configured" });
+  }
+
   const env = getSlackEnv();
   try {
     const integration = await prisma.installedIntegration.findUnique({
